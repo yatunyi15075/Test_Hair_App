@@ -1,0 +1,25 @@
+├── public
+├── src
+│   ├── assets                 # Images or any other static files
+│   ├── components
+│   │   ├── Dashboard.tsx      # Sidebar and main dashboard layout
+│   │   └── Sidebar.tsx        # Sidebar Component (if separated)
+│   ├── pages
+│   │   ├── WelcomePage.tsx    # Welcome page
+│   │   ├── AnalysisPage.tsx   # Analysis page
+│   │   └── PhotoPage.tsx      # Photo page
+│   ├── styles                 # Custom CSS or Tailwind overrides (if any)
+│   ├── App.tsx                # Main App component
+│   └── index.tsx              # Entry point
+
+
+
+3d cute girl on hoodie creator credit:
+
+"Cute little girl with a hoodie and a sword, sta" (https://skfb.ly/oV7HF) by klrxyz is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
+
+gitl standing upright 3d model:
+
+"Girl in a hoodie" (https://skfb.ly/oBH9x) by striderrotk is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+

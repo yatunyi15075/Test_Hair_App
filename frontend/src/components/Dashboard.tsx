@@ -1,27 +1,35 @@
 import React from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { FaHome, FaCamera, FaChartLine } from 'react-icons/fa';
 
 const Dashboard: React.FC = () => {
+  // Get the current location
+  const location = useLocation();
+
+  // Check if the current route is Home ("/")
+  const isHomePage = location.pathname === '/';
+
   return (
     <div className="min-h-screen flex bg-gray-50">
-      {/* Sidebar */}
-      <aside className="bg-pink-600 text-white w-64 space-y-6 py-7 px-2 hidden md:block">
-        <div className="text-3xl font-bold border-b pb-4 text-center">Hair Analysis</div>
+      {/* Sidebar: Only show if not on the Home page */}
+      {!isHomePage && (
+        <aside className="bg-pink-600 text-white w-64 space-y-6 py-7 px-2 hidden md:block">
+          <div className="text-3xl font-bold border-b pb-4 text-center">Hair Analysis</div>
 
-        {/* Navigation Links */}
-        <nav className="mt-10">
-          <Link to="/" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-pink-700 hover:text-white">
-            <FaHome className="inline-block mr-3" /> Home
-          </Link>
-          <Link to="/analysis" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-pink-700 hover:text-white">
-            <FaChartLine className="inline-block mr-3" /> Hair Analysis
-          </Link>
-          <Link to="/photo" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-pink-700 hover:text-white">
-            <FaCamera className="inline-block mr-3" /> Take Photo
-          </Link>
-        </nav>
-      </aside>
+          {/* Navigation Links */}
+          <nav className="mt-10">
+            <Link to="/" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-pink-700 hover:text-white">
+              <FaHome className="inline-block mr-3" /> Home
+            </Link>
+            <Link to="/analysis" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-pink-700 hover:text-white">
+              <FaChartLine className="inline-block mr-3" /> Hair Analysis
+            </Link>
+            <Link to="/photos" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-pink-700 hover:text-white">
+              <FaCamera className="inline-block mr-3" /> Take Photo
+            </Link>
+          </nav>
+        </aside>
+      )}
 
       {/* Mobile Sidebar Toggle Button */}
       <div className="md:hidden flex justify-between bg-pink-600 text-white px-4 py-3">
