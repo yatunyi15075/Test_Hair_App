@@ -32,6 +32,7 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* Mobile Sidebar Toggle Button */}
+      {!isHomePage && (
       <div className="md:hidden flex justify-between bg-pink-600 text-white px-4 py-3">
         <span className="text-2xl font-bold">Hair Analysis</span>
         <button id="mobileMenuButton" className="focus:outline-none">
@@ -40,6 +41,7 @@ const Dashboard: React.FC = () => {
           </svg>
         </button>
       </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 p-10 text-gray-800">

@@ -1,21 +1,21 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import WelcomePage from './components/WelcomePage';
-import PhotoPage from './components/PhotoPage';
-import AnalysisPage from './components/AnalysisPage';
+import WelcomePage from './pages/WelcomePage';
+import PhotoPage from './pages/PhotoPage';
+import AnalysisPage from './pages/AnalysisPage';
 import Dashboard from './components/Dashboard';
-import Home from './components/Home';
+import Home from './pages/Home';
 
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
+      <Route index element={<Home />} />
         <Route path="/" element={<Dashboard />}>
-          {/* Set the Home page as the new index route */}
           <Route index element={<Home />} />
           <Route path="welcome" element={<WelcomePage />} />
           <Route path="analysis" element={<AnalysisPage />} />
-          <Route path="photos" element={<PhotoPage />} />
+          <Route path="photo" element={<PhotoPage />} />
         </Route>
       </Routes>
     </Router>
