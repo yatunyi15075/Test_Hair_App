@@ -17,7 +17,7 @@ const Dashboard: React.FC = () => {
           <Link to="/analysis" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-pink-700 hover:text-white">
             <FaChartLine className="inline-block mr-3" /> Hair Analysis
           </Link>
-          <Link to="/photos" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-pink-700 hover:text-white">
+          <Link to="/photo" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-pink-700 hover:text-white">
             <FaCamera className="inline-block mr-3" /> Take Photo
           </Link>
         </nav>
