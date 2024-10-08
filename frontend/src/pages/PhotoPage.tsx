@@ -1,20 +1,37 @@
 import React, { useRef, useState, useEffect } from 'react';
+import axios from 'axios'; // Add axios for API calls
 
-// Main PhotoPage Component
 const PhotoPage: React.FC = () => {
-  const [isCameraView, setIsCameraView] = useState(false); // State for managing the camera view
+  const [isCameraView, setIsCameraView] = useState(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null); // State for backend results
 
-  // Handle redirection to the Camera View
   const openCameraView = () => {
     setIsCameraView(true);
+  };
+
+  // Handle Image Upload
+  const uploadImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      // Send image to the backend for analysis
+      const response = await axios.post('http://localhost:5000/api/images/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setAnalysisResult(response.data.analysisResult); // Display result from backend
+      alert('Image uploaded and analyzed successfully!');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image');
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-pink-100 to-pink-200">
       {!isCameraView ? (
         <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md text-center transform hover:scale-105 transition-all duration-300 ease-in-out">
-          {/* Display Image Preview or Default Placeholder */}
           {imageSrc ? (
             <img
               src={imageSrc}
@@ -32,7 +49,6 @@ const PhotoPage: React.FC = () => {
           <p className="text-gray-600 mb-6">
             We'll use this to detect your hair type and recommend products.
           </p>
-          {/* Camera Button */}
           <button
             className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 focus:outline-none transform hover:scale-110 transition-all duration-300 mb-2"
             onClick={openCameraView}
@@ -51,10 +67,12 @@ const PhotoPage: React.FC = () => {
                   const reader = new FileReader();
                   reader.onload = () => {
                     setImageSrc(reader.result as string);
+                    // Upload the selected image to the backend
+                    uploadImage(file);
                   };
                   reader.readAsDataURL(file);
                 } else {
-                  alert("Please select a valid image file (PNG, JPG, JPEG).");
+                  alert('Please select a valid image file (PNG, JPG, JPEG).');
                 }
               }}
               className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
@@ -63,9 +81,17 @@ const PhotoPage: React.FC = () => {
               Choose from Library
             </button>
           </div>
+
+          {/* Display Backend Analysis Result */}
+          {analysisResult && (
+            <div className="mt-4 bg-gray-100 p-4 rounded-lg shadow-md">
+              <h3 className="text-lg font-bold text-pink-700">Analysis Result</h3>
+              <p>{analysisResult}</p>
+            </div>
+          )}
         </div>
       ) : (
-        <CameraCapturePage setImageSrc={setImageSrc} setIsCameraView={setIsCameraView} />
+        <CameraCapturePage setImageSrc={setImageSrc} setIsCameraView={setIsCameraView} uploadImage={uploadImage} />
       )}
     </div>
   );
@@ -75,12 +101,12 @@ const PhotoPage: React.FC = () => {
 const CameraCapturePage: React.FC<{
   setImageSrc: React.Dispatch<React.SetStateAction<string | null>>;
   setIsCameraView: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ setImageSrc, setIsCameraView }) => {
+  uploadImage: (file: File) => Promise<void>;
+}> = ({ setImageSrc, setIsCameraView, uploadImage }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
-  // Open camera and request permission on mount
   useEffect(() => {
     const openCamera = async () => {
       try {
@@ -90,7 +116,7 @@ const CameraCapturePage: React.FC<{
           setIsCameraOpen(true);
         }
       } catch (error) {
-        alert("Camera not accessible or permission denied.");
+        alert('Camera not accessible or permission denied.');
         setIsCameraView(false);
       }
     };
@@ -98,14 +124,18 @@ const CameraCapturePage: React.FC<{
     openCamera();
   }, [setIsCameraView]);
 
-  // Function to capture the photo
   const capturePhoto = () => {
     if (canvasRef.current && videoRef.current) {
       const context = canvasRef.current.getContext('2d');
       canvasRef.current.width = videoRef.current.videoWidth;
       canvasRef.current.height = videoRef.current.videoHeight;
       context?.drawImage(videoRef.current, 0, 0);
-      setImageSrc(canvasRef.current.toDataURL('image/jpeg'));
+      const capturedImage = canvasRef.current.toDataURL('image/jpeg');
+      setImageSrc(capturedImage);
+
+      // Convert the captured image to a file and upload it
+      const file = dataURLToFile(capturedImage, 'captured-photo.jpg');
+      uploadImage(file);
 
       // Stop the camera and go back to the main view
       const stream = videoRef.current.srcObject as MediaStream;
@@ -114,17 +144,23 @@ const CameraCapturePage: React.FC<{
     }
   };
 
+  const dataURLToFile = (dataUrl: string, fileName: string) => {
+    const arr = dataUrl.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], fileName, { type: mime });
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
-      {/* Camera Preview */}
       <div className="relative">
-        <video
-          ref={videoRef}
-          autoPlay
-          className="w-full h-72 object-cover rounded-md mb-4 shadow-lg"
-        ></video>
+        <video ref={videoRef} autoPlay className="w-full h-72 object-cover rounded-md mb-4 shadow-lg"></video>
         <canvas ref={canvasRef} className="hidden"></canvas>
-        {/* Capture and Close Buttons */}
         <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-4">
           <button
             className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 focus:outline-none transform hover:scale-110 transition-all duration-300"
@@ -144,14 +180,6 @@ const CameraCapturePage: React.FC<{
           </button>
         </div>
       </div>
-      {/* Permission Handling Message */}
-      {isCameraOpen && (
-        <div className="bg-white p-4 mt-4 rounded-lg shadow-md text-center">
-          <p className="text-gray-700 font-semibold">
-            Do you want to continue taking a photo or close the camera?
-          </p>
-        </div>
-      )}
     </div>
   );
 };
