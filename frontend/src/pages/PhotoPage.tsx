@@ -1,10 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
-import axios from 'axios'; // Add axios for API calls
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios'; 
 
 const PhotoPage: React.FC = () => {
   const [isCameraView, setIsCameraView] = useState(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null); // State for backend results
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
 
   const openCameraView = () => {
     setIsCameraView(true);
@@ -16,15 +16,15 @@ const PhotoPage: React.FC = () => {
     formData.append('image', file);
 
     try {
-      // Send image to the backend for analysis
-      const response = await axios.post('http://localhost:5000/api/images/upload', formData, {
+      const response = await axios.post('http://localhost:5000/api/images', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setAnalysisResult(response.data.analysisResult); // Display result from backend
+      const analysis = response.data.analysisResult || 'No analysis result returned';
+      setAnalysisResult(`Prediction: ${analysis.prediction}`); // Display the analysis result
       alert('Image uploaded and analyzed successfully!');
     } catch (error) {
       console.error('Error uploading image:', error);
-      alert('Failed to upload image');
+      alert('Failed to upload image. Please check the backend or network configuration.');
     }
   };
 
@@ -33,11 +33,7 @@ const PhotoPage: React.FC = () => {
       {!isCameraView ? (
         <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md text-center transform hover:scale-105 transition-all duration-300 ease-in-out">
           {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt="Captured"
-              className="w-full h-56 object-cover rounded-md mb-4 shadow-lg"
-            />
+            <img src={imageSrc} alt="Captured" className="w-full h-56 object-cover rounded-md mb-4 shadow-lg" />
           ) : (
             <img
               src="https://example.com/hair-analysis-photo.jpg"
@@ -46,13 +42,8 @@ const PhotoPage: React.FC = () => {
             />
           )}
           <h2 className="text-3xl font-bold mb-2 text-pink-700">Take a photo</h2>
-          <p className="text-gray-600 mb-6">
-            We'll use this to detect your hair type and recommend products.
-          </p>
-          <button
-            className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 focus:outline-none transform hover:scale-110 transition-all duration-300 mb-2"
-            onClick={openCameraView}
-          >
+          <p className="text-gray-600 mb-6">We'll use this to detect your hair type and recommend products.</p>
+          <button className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 focus:outline-none transform hover:scale-110 transition-all duration-300 mb-2" onClick={openCameraView}>
             Use Camera
           </button>
 
@@ -67,7 +58,6 @@ const PhotoPage: React.FC = () => {
                   const reader = new FileReader();
                   reader.onload = () => {
                     setImageSrc(reader.result as string);
-                    // Upload the selected image to the backend
                     uploadImage(file);
                   };
                   reader.readAsDataURL(file);
@@ -96,6 +86,7 @@ const PhotoPage: React.FC = () => {
     </div>
   );
 };
+
 
 // Camera View Component
 const CameraCapturePage: React.FC<{

@@ -1,23 +1,26 @@
 import express from 'express';
 import multer from 'multer';
+import path from 'path';
 import { uploadImage, getAllImages, deleteImage } from '../controllers/imageController.js';
 
 const router = express.Router();
 
-// Setup multer for file handling
+// Set up storage for Multer with proper path configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads');
+    cb(null, 'uploads/'); // Specify the directory for storing files
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`);
+    cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to the filename
   },
 });
-const upload = multer({ storage });
 
-// Routes
-router.post('/upload', upload.single('image'), uploadImage);
+const upload = multer({ storage: storage });
+
+// Define routes with the correct field name 'image'
+router.post('/', upload.single('image'), uploadImage);
 router.get('/', getAllImages);
 router.delete('/:id', deleteImage);
+
 
 export default router;

@@ -4,6 +4,7 @@ import imageRoutes from './routes/imageRoutes.js';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const app = express();
 const PORT = 5000;
@@ -11,6 +12,12 @@ const PORT = 5000;
 // Use fileURLToPath and path to define __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Create uploads directory if it does not exist
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
 
 // Database Connection
 await sequelize.sync({ force: false })
