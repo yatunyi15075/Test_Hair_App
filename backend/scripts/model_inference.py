@@ -4,68 +4,60 @@ import torchvision.transforms as transforms
 from PIL import Image
 import json
 
-# Get the arguments passed from the Node.js backend
-image_path, model_file, metadata_file = sys.argv[1], sys.argv[2], sys.argv[3]
+# Replace with your actual model class or import from another file
+class YourModelClass(torch.nn.Module):
+    def __init__(self):
+        super(YourModelClass, self).__init__()
+        self.conv1 = torch.nn.Conv2d(3, 16, 3, 1)
+        self.fc1 = torch.nn.Linear(16 * 26 * 26, 10)
 
-# Load the model and metadata
-model = torch.load(model_file)
-model.eval()
+    def forward(self, x):
+        x = torch.relu(self.conv1(x))
+        x = x.view(-1, 16 * 26 * 26)
+        x = self.fc1(x)
+        return x
 
-# Load metadata (if needed for preprocessing)
-with open(metadata_file, 'r') as f:
-    metadata = json.load(f)
+# Get the arguments passed from Node.js
+image_path, weights_file, metadata_file = sys.argv[1], sys.argv[2], sys.argv[3]
 
-# Define preprocessing transformations based on the model metadata
-transform = transforms.Compose([
-    transforms.Resize((metadata['input_height'], metadata['input_width'])),
-    transforms.ToTensor(),
-])
+try:
+    # Load the model architecture
+    model = YourModelClass()
+    
+    # Load the state_dict
+    model.load_state_dict(torch.load(weights_file, map_location=torch.device('cpu')))
+    model.eval()
+except Exception as e:
+    print(f"Error loading model: {e}")
+    sys.exit(1)
 
-# Open the image and apply the transformations
-image = Image.open(image_path)
-image = transform(image).unsqueeze(0)  # Add batch dimension
+try:
+    # Load metadata for preprocessing information
+    with open(metadata_file, 'r') as f:
+        metadata = json.load(f)
 
-# Perform inference
-with torch.no_grad():
-    output = model(image)
-    _, predicted = torch.max(output, 1)
+    # Use input size from metadata or default to (224, 224)
+    input_height = metadata.get('input_height', 224)
+    input_width = metadata.get('input_width', 224)
 
-# Output the result as a JSON string for Node.js to capture
-print(json.dumps({'prediction': int(predicted.item())}))
+    # Define preprocessing transformations
+    transform = transforms.Compose([
+        transforms.Resize((input_height, input_width)),
+        transforms.ToTensor(),
+    ])
 
+    # Open the image and apply the transformations
+    image = Image.open(image_path)
+    image = transform(image).unsqueeze(0)  # Add batch dimension
 
+    # Perform inference
+    with torch.no_grad():
+        output = model(image)
+        _, predicted = torch.max(output, 1)
 
-# import sys
-# import torch
-# import torchvision.transforms as transforms
-# from PIL import Image
-# import json
+    # Output the result as a JSON string
+    print(json.dumps({'prediction': int(predicted.item())}))
 
-# # Get the arguments passed from the Node.js backend
-# image_path, model_file, metadata_file = sys.argv[1], sys.argv[2], sys.argv[3]
-
-# # Load the model and metadata
-# model = torch.load(model_file)
-# model.eval()
-
-# # Load metadata (if needed for preprocessing)
-# with open(metadata_file, 'r') as f:
-#     metadata = json.load(f)
-
-# # Define preprocessing transformations based on the model metadata
-# transform = transforms.Compose([
-#     transforms.Resize((metadata['input_height'], metadata['input_width'])),
-#     transforms.ToTensor(),
-# ])
-
-# # Open the image and apply the transformations
-# image = Image.open(image_path)
-# image = transform(image).unsqueeze(0)  # Add batch dimension
-
-# # Perform inference
-# with torch.no_grad():
-#     output = model(image)
-#     _, predicted = torch.max(output, 1)
-
-# # Output the result as a JSON string for Node.js to capture
-# print(json.dumps({'prediction': int(predicted.item())}))
+except Exception as e:
+    print(f"Error during inference: {e}")
+    sys.exit(1)

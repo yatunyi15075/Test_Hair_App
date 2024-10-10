@@ -1,26 +1,29 @@
 import Image from '../models/Image.js';
 import path from 'path';
 import fs from 'fs';
-import { PythonShell } from 'python-shell'; // Add PythonShell for running the model script
+import { PythonShell } from 'python-shell';
 
-// Controller for uploading and analyzing an image using the downloaded model
+
 export const uploadImage = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
     // Save the image file path in the database
-    const imagePath = path.join('uploads', req.file.filename);  // Change to `path.join` for compatibility
+    const imagePath = `uploads/${req.file.filename}`;
     const image = await Image.create({ imageUrl: imagePath });
 
-    // Define the path to the Python script and model files
+    // Define the path to the Python script and model file
     const scriptPath = path.join(process.cwd(), 'scripts', 'model_inference.py');
-    const modelPath = path.join(process.cwd(), 'model', 'model.bin');
+    const weightsPath = path.join(process.cwd(), 'model', 'weights.pth'); // Use weights.pth file
     const metadataPath = path.join(process.cwd(), 'model', 'metadata.json');
 
-    // Run the model inference script using PythonShell
-    const options = {
-      pythonPath: 'python',  // Ensure the path to the python executable is set correctly
-      args: [imagePath, modelPath, metadataPath], // Pass image path, model file, and metadata as arguments
+    console.log('Script Path:', scriptPath);
+    console.log('Weights Path:', weightsPath);
+    console.log('Metadata Path:', metadataPath);
+    console.log('Image Path:', imagePath);
+
+    let options = {
+      args: [imagePath, weightsPath, metadataPath], // Pass image path, weights file, and metadata as arguments
     };
 
     PythonShell.run(scriptPath, options, (err, results) => {
@@ -30,15 +33,15 @@ export const uploadImage = async (req, res) => {
       }
 
       // Assuming the script outputs a JSON string with analysis results
-      const analysisResult = results[0] || 'Analysis could not be performed.';
-
+      const analysisResult = results ? results[0] : 'Analysis could not be performed.';
       res.status(201).json({ message: 'Image uploaded and analyzed successfully', image, analysisResult });
     });
   } catch (error) {
-    console.error('Error uploading or analyzing image:', error); // Log the error for debugging
+    console.error('Error uploading or analyzing image:', error);
     res.status(500).json({ error: 'Image upload or analysis failed' });
   }
 };
+
 
 
 // Controller for fetching all uploaded images

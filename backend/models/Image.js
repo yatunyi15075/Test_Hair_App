@@ -11,6 +11,6 @@ const Image = sequelize.define('Image', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-});
+}); 
 
 export default Image;

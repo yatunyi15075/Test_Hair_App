@@ -8,7 +8,7 @@ const router = express.Router();
 // Set up storage for Multer with proper path configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Specify the directory for storing files
+    cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to the filename
@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Define routes with the correct field name 'image'
+
 router.post('/', upload.single('image'), uploadImage);
 router.get('/', getAllImages);
 router.delete('/:id', deleteImage);
